@@ -52,4 +52,4 @@ ageSurvive.set( xlim=( 0 , trainingData[ 'Age' ].max() ) )
 ageSurvive.add_legend()
 
 # survival for of males and females according to age. Significant difference
-#in curves is a sign that age is a relevant variable for predicting survival(target) 
+# Difference in curves is a sign that age is a relevant variable for predicting survival(target) 
