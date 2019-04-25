@@ -52,3 +52,20 @@ C = Cherbourg
 Q = Queenstown
 
 S = Southampton
+
+
+# Categorical Features
+These are nominal, ordinal, ratio, or interval variables. Very useful for visualizing data
+
+Nominal: Survived, Sex, Embarked
+
+Ordinal: Pclass
+
+
+# Numerical Features
+Differ from one sample to another. Could be discrete, continuous, or timeseries. Useful for plots and visualizations.
+
+Continous (Could contain decimal values): Age, Fare
+
+Discrete: SibSp, Parch
+
