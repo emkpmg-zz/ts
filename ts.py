@@ -31,3 +31,25 @@ v2 = sns.pointplot(x="Pclass", y="Survived", hue="Sex", data=trainingData,
               markers=["*", "o"], linestyles=["-", "--"]);
 v2.set(xlabel='Socio-economic status', ylabel='Survival Tendency')
 plt.show()
+#Heatmap correlation can help select the most important variables for our learning model
+c = trainingData.corr()
+sns.heatmap(c)
+
+#custom heatmap fxn -- optional
+#def heatMap( df ):
+#    _ , a = plt.subplots( figsize =( 12 , 10 ) )
+#    cm = sns.diverging_palette( 220 , 10 , as_cmap = True )
+#    _ = sns.heatmap(c, cmap = cm, square=True, cbar_kws={ 'shrink' : .9 }, 
+#        ax=a, annot = True, annot_kws = { 'fontsize' : 12 })
+#heatMap(trainingData)
+#Important variables in relation to survival: socio-economic class
+# Others: socio-economic class&Age, socio-economic class&fare
+
+# relationship between age and Survival grouped by sex
+ageSurvive = sns.FacetGrid(trainingData , hue= 'Survived' , aspect=3 , row = 'Sex' )
+ageSurvive.map( sns.kdeplot , 'Age' , shade= True )
+ageSurvive.set( xlim=( 0 , trainingData[ 'Age' ].max() ) )
+ageSurvive.add_legend()
+
+# survival for of males and females according to age. Significant difference
+#in curves is a sign that age is a relevant variable for predicting survival(target) 
