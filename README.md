@@ -17,23 +17,23 @@ Survival (survival) -- Did Passenger Survive the Shipwreck?
 
 Ticket class (pclass) -- class of ticket passenger holds. This variable also describes socio-economic status
 
-1=1st = Upper Class 
+1 = 1st = Upper Class 
 
-2=2nd = Middle Class 
+2 = 2nd = Middle Class 
 
-3=3rd = Lower Class 
+3 = 3rd = Lower Class 
 
 
 Sex (sex) -- Passenger's gender
 
 
-Age (Age) -- Passenger's age in years 
+Age (Age) -- Passenger's age in years. age: If age < 1, it will be estimated as a fraction. e.g xx.5
 
 
-sibsp -- Number of passenger's siblings or spouses on board
+sibsp -- Number of passenger's siblings(brother, sister, stepbrother, stepsister) or spouses(husband or wife) on board
 
 
-parch -- Number of parents or children aboard the Titanic
+parch -- Number of parents(mother or father), children(daughter, son, stepdaughter, stepson) or relatives on board. Children traveling with Nannies had a null value for this variable.
 
 
 ticket -- Passenger's ticket number
