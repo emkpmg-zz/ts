@@ -55,7 +55,7 @@ S = Southampton
 
 
 # Categorical Features
-These are nominal, ordinal, ratio, or interval variables. Very useful for visualizing data
+These are nominal, ordinal, ratio, or interval variables. Can take on one of a set or fixed number of possible values. Very useful for visualizing data
 
 Nominal: Survived, Sex, Embarked
 
@@ -63,9 +63,10 @@ Ordinal: Pclass
 
 
 # Numerical Features
-Differ from one sample to another. Could be discrete, continuous, or timeseries. Useful for plots and visualizations.
+Differ from one sample to another(values of integers or real numbers). Could be discrete, continuous, or timeseries. Useful for plots and visualizations.
 
 Continous (Could contain decimal values): Age, Fare
 
 Discrete: SibSp, Parch
+
 
