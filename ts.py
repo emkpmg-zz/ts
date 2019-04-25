@@ -21,5 +21,13 @@ testData.sample(5)
 
 # 02 Data Visualization
 #embarked -- Port of Embarkation C = Cherbourg Q = Queenstown S = Southampton
-#sns.barplot -- 
-sns.barplot(x="Embarked", y="Survived", hue="Sex", data=trainingData);
+#sns.barplot -- central tendency of a numeric variable
+v1 = sns.barplot(x="Embarked", y="Survived", hue="Sex", data=trainingData);
+v1.set(xlabel='Port of Embarkation', ylabel='Survival Tendency')
+plt.show()
+
+v2 = sns.pointplot(x="Pclass", y="Survived", hue="Sex", data=trainingData,
+              palette={"male": "purple", "female": "turquoise"},
+              markers=["*", "o"], linestyles=["-", "--"]);
+v2.set(xlabel='Socio-economic status', ylabel='Survival Tendency')
+plt.show()
