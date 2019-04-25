@@ -6,31 +6,49 @@ Two datasets are included:
 -The training set (train.csv): used to build your machine learning models
 -The test set (test.csv): used to assess how well your model performs on unseen data (Data other than what was used to train the model)
 
-Variable Definition
+# Variable Definition
+
 Survival (survival) -- Did Passenger Survive the Shipwreck?
+
 0 = No
+
 1 = Yes 
 
-Ticket class (pclass) -- class of ticket passenger holds
-1 = 1st
-2 = 2nd
-3 = 3rd
+
+Ticket class (pclass) -- class of ticket passenger holds. This variable also describes socio-economic status
+
+1=1st = Upper Class 
+
+2=2nd = Middle Class 
+
+3=3rd = Lower Class 
+
 
 Sex (sex) -- Passenger's gender
 
+
 Age (Age) -- Passenger's age in years 
+
 
 sibsp -- Number of passenger's siblings or spouses on board
 
+
 parch -- Number of parents or children aboard the Titanic
+
 
 ticket -- Passenger's ticket number
 
+
 fare -- Cost of passenger's fare
+
 
 cabin -- Cabin number 
 
+
 embarked -- Port of Embarkation 
+
 C = Cherbourg
+
 Q = Queenstown
+
 S = Southampton
