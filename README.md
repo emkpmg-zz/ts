@@ -1,4 +1,5 @@
-#Predict passengers' survival on the Titanic Ship
+# Predict passengers' survival on the Titanic Ship
+
 The Titanic collided with an iceberg on its first voyage and sank on April 15, 1912. Owning to insufficient lifeboats for the passengers and crew, about 1502 of its 2224 total passengers died. This tragic incident threw the international community into shock, leading to establishment and enforcement of safer ship regulations. This project makes analyses of the passengers who survived. In terms of gender, social class or age.
 
 Two datasets are included:
