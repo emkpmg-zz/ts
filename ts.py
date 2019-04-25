@@ -51,7 +51,6 @@ ageSurvive = sns.FacetGrid(trainingData , hue= 'Survived' , aspect=3 , row = 'Se
 ageSurvive.map( sns.kdeplot , 'Age' , shade= True )
 ageSurvive.set( xlim=( 0 , trainingData[ 'Age' ].max() ) )
 ageSurvive.add_legend()
-
 # survival for of males and females according to age. Significant difference
 # Difference in curves is a sign that age is a relevant variable for predicting survival(target)
 
@@ -95,4 +94,7 @@ imputed[ 'Fare' ] = bothDatasets.Fare.fillna( bothDatasets.Fare.mean() )
 #compare original data sample to imputed sample to observe populated missing values
 imputed.sample(20)
 bothDatasets.sample(20)
+
+
+
 
