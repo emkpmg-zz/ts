@@ -4,11 +4,39 @@ Created on Thu Apr 25 12:05:03 2019
 
 @author: PIANDT
 """
+# Ignore warnings
+import warnings
+warnings.filterwarnings('ignore')
 
+# Handle table-like data and matrices
 import numpy as np
 import pandas as pd
+
+# Modelling Algorithms
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC, LinearSVC
+from sklearn.ensemble import RandomForestClassifier , GradientBoostingClassifier
+
+# Modelling Helpers
+from sklearn.preprocessing import Imputer , Normalizer , scale
+from sklearn.cross_validation import train_test_split , StratifiedKFold
+from sklearn.feature_selection import RFECV
+
+# Visualisation
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.pylab as pylab
 import seaborn as sns
+
+# Configure visualisations
+#%matplotlib inline
+mpl.style.use( 'ggplot' )
+sns.set_style( 'white' )
+pylab.rcParams[ 'figure.figsize' ] = 8 , 6
+
 #matplotlib inline
 
 # 01 DATA LOADING, EXPLORATION AND VISUALIZATION
@@ -38,10 +66,10 @@ sns.heatmap(c)
 
 #custom heatmap fxn -- optional
 #def heatMap( df ):
-#    _ , a = plt.subplots( figsize =( 12 , 10 ) )
+#    _ , a = plt.subplots( figsize =( 10 , 8 ) )
 #    cm = sns.diverging_palette( 220 , 10 , as_cmap = True )
 #    _ = sns.heatmap(c, cmap = cm, square=True, cbar_kws={ 'shrink' : .9 }, 
-#        ax=a, annot = True, annot_kws = { 'fontsize' : 12 })
+#        ax=a, annot = True, annot_kws = { 'fontsize' : 14 })
 #heatMap(trainingData)
 #Important variables in relation to survival: socio-economic class
 # Others: socio-economic class&Age, socio-economic class&fare
@@ -63,6 +91,40 @@ ageSurvive.add_legend()
 #combine both training and test datasets
 bothDatasets = trainingData.append( testData , ignore_index = True )
 
+#Get class of ticket from the ticket number
+#function to extracts ticket prefix, returns 'PNA' if no prefix found or ticket is made of only numbers
+
+def cleanTicket( ticket ):
+    ticket = ticket.replace( '.' , '' )
+    ticket = ticket.replace( '/' , '' )
+    ticket = ticket.split()
+    ticket = map( lambda t : t.strip() , ticket )
+    ticket = list(filter( lambda t : not t.isdigit() , ticket ))
+    if len( ticket ) > 0:
+        return ticket[0]
+    else: 
+        return 'PNA'
+      
+ticket = pd.DataFrame()
+# Get dummy variables from tickets:
+ticket[ 'Ticket' ] = bothDatasets[ 'Ticket' ].map( cleanTicket )
+ticket = pd.get_dummies( ticket[ 'Ticket' ] , prefix = 'Ticket' )
+ticket.shape
+ticket.head()
+
+#Grouping family size into categories with 'Parch' and 'Sibsp' variables
+#create dataframe for family category called famCat
+famCategory = pd.DataFrame()
+famCat = pd.DataFrame()
+# introducing a new feature : the size of families (including the passenger)
+famCat[ 'FamilySize' ] = bothDatasets[ 'Parch' ] + bothDatasets[ 'SibSp' ] + 1
+# introducing other features based on the family size
+famCat[ 'Family_Single' ] = famCat[ 'FamilySize' ].map( lambda s : 1 if s == 1 else 0 )
+famCat[ 'Family_Small' ]  = famCat[ 'FamilySize' ].map( lambda s : 1 if 2 <= s <= 4 else 0 )
+famCat[ 'Family_Large' ]  = famCat[ 'FamilySize' ].map( lambda s : 1 if 5 <= s else 0 )
+#view family category
+famCat.head()
+
 #select 891 rows out of bothDatasets (891 is the count of the bigger set - training set)
 #selectedData = bothDatasets[ :891 ]
 
@@ -81,25 +143,25 @@ embarked.head()
 #Most alghorims don't expect null values. Thus, missing values for variables can be polulated with an average of that variable's values as observed in the training set.
 
 # Create an empty dataset to hold the populated missing values for Age and Fare
-imputed = pd.DataFrame()
+ageNfare = pd.DataFrame()
 
 # Substitute missing Age values with mean Age
-imputed[ 'Age' ] = bothDatasets.Age.fillna( bothDatasets.Age.mean() )
+ageNfare[ 'Age' ] = bothDatasets.Age.fillna( bothDatasets.Age.mean() )
 
 # Substitute missing Fare values with mean Fare
-imputed[ 'Fare' ] = bothDatasets.Fare.fillna( bothDatasets.Fare.mean() )
+ageNfare[ 'Fare' ] = bothDatasets.Fare.fillna( bothDatasets.Fare.mean() )
 
 #compare original data sample to imputed sample to observe populated missing values
-imputed.sample(20)
+ageNfare.sample(20)
 bothDatasets.sample(20)
 
 # 02 VARIABLE SYNTHESIS
 #Titles of passengers' names can help give us ideas about their social status.
 
-#Extracting titles from names we create a dataframe for titles 
-title = pd.DataFrame()
+#Extracting titles from names we create a dataframe for titles , pTitle
+pTitle = pd.DataFrame()
 # we extract the title from each name
-title[ 'Title' ] = bothDatasets[ 'Name' ].map( lambda name: name.split( ',' )[1].split( '.' )[0].strip() )
+pTitle[ 'Title' ] = bothDatasets[ 'Name' ].map( lambda name: name.split( ',' )[1].split( '.' )[0].strip() )
 
 # dictionary with all possible titles
 Title_Dictionary = {
@@ -112,42 +174,134 @@ Title_Dictionary = {
                     }
 
 # mapping each title
-title[ 'Title' ] = title.Title.map( Title_Dictionary )
-title = pd.get_dummies( title.Title )
+pTitle[ 'Title' ] = pTitle.Title.map( Title_Dictionary )
+pTitle = pd.get_dummies( pTitle.Title )
 #title = pd.concat( [ title , titles_dummies ] , axis = 1 )
 #view title data
-title.head()
+pTitle.head()
 
 #Cabin category can be obtained from cabin number
 #create a cabin category dataframe
-cabin = pd.DataFrame()
+cabinCat = pd.DataFrame()
 # Missing values for cabin number to be replaced with 'NA' - Not Available/ Non Applicable
-cabin[ 'Cabin' ] = bothDatasets.Cabin.fillna( 'NA' )
+cabinCat[ 'Cabin' ] = bothDatasets.Cabin.fillna( 'NA' )
 # map cabin values to corresponding cabin letter
-cabin[ 'Cabin' ] = cabin[ 'Cabin' ].map( lambda c : c[0] )
+cabinCat[ 'Cabin' ] = cabinCat[ 'Cabin' ].map( lambda c : c[0] )
 # dummy encoding
-cabin = pd.get_dummies( cabin['Cabin'] , prefix = 'Cabin' )
+cabinCat = pd.get_dummies( cabinCat['Cabin'] , prefix = 'Cabin' )
 #view cabin data
-cabin.head()
+cabinCat.head()
+
+# 03 VARIABLE SELECTION AND DATA SPLITING
+#combine Chosen Variables: cabinCat, ageNfare, embarked, famCat, Sex, ticket, pclass
+chosenVars = pd.concat([ageNfare, embarked, cabinCat, sex], axis = 1)
+#print(chosenVars.head())
+
+#Data split: Training, Validation and Test sets creation post cleaning
+# Create all datasets that are necessary to train, validate and test models
+#X - input features and Y - output / labels
+trainX = chosenVars[ 0:891 ]
+trainY = trainingData.Survived
+testX = chosenVars[ 891: ]
+trainX , validX , trainY , validY = train_test_split( trainX , trainY , train_size = .7 )
+print(chosenVars.shape , trainX.shape , validX.shape , trainY.shape , validY.shape , testX.shape)
+
+#observe size of training, test and validation sets.
+
+# Time to evaluate the most important variable for our model predictopns
+# i.e which variables will make the most impact on our prediction model ?
+    
+tree = DecisionTreeClassifier( random_state = 99 )
+tree.fit(trainX, trainY )
+varRelevance = pd.DataFrame( tree.feature_importances_  , columns = [ 'Relevance' ] , index = trainX.columns)
+varRelevance = varRelevance.sort_values( [ 'Relevance' ] , ascending = True )
+varRelevance[ : 10 ].plot( kind = 'barh' )
+print (tree.score( trainX , trainY ))
+
+# 04 SELECTION OF A CLASSIFICATION MODEL
+#Some ML models are Support Vector Machines, Gradient Boosting Classifier, Random Forests Model, K-nearest neighbors, Gaussian Naive Bayes and Logistic Regression.
+# logisic regression model will be used for this classification
+#Reason being, our output is a binary classification. 0 (did not survive) or 1 (survived)
+
+#assign model to variable 'predictionModel'
+predictionModel = LogisticRegression()
+
+#fit model to training dataset
+predictionModel.fit( trainX , trainY )
+
+#Evaluate the accuracy or model or how well the model performs of training data
+#This is done by comparing accuracy scores on both training and test set
+print (predictionModel.score( trainX , trainY ) , predictionModel.score( validX , validY ))
+
+#select relevant varibles automatically for model and visualize
+rfecv = RFECV( estimator = predictionModel , step = 1 , cv = StratifiedKFold( trainY , 2 ) , scoring = 'accuracy' )
+rfecv.fit( trainX , trainY )
+
+print (rfecv.score( trainX , trainY ) , rfecv.score( validX , validY ))
+print( "Ideal input features necessary for this model are : %d" % rfecv.n_features_ )
+
+# Visualize ideal input features and validation test scores
+plt.figure()
+plt.xlabel( "Ideal Input Features" )
+plt.ylabel( "Cross validation (CV)" )
+plt.plot( range( 1 , len( rfecv.grid_scores_ ) + 1 ) , rfecv.grid_scores_ )
+plt.show()
+
+#note that the feature selection can change eact time you run your code.
+# The best number of features gives the highest accuracy for the model (e.g Logistic Regression)
+# 4 gave an accuracy if 80.1
+
+#EVALUATING ALL MODELS TO SEE WHICH ONES WORK BEST
+
+# Logistic Regression
+lr = LogisticRegression()
+lr.fit(trainX , trainY)
+survivePredictlr = lr.predict(testX)
+lrAccuracy = round(lr.score(trainX, trainY) * 100, 2)
+print('Logistic Regression Accuracy is   ', lrAccuracy)
+print('Logistic Regression Survival Prediction on test dataset')
+print(survivePredictlr)
+
+#WE CAN FIND HIGHLY CORRELATED FEATURES
+corrVar = pd.DataFrame(trainX.columns.delete(0))
+corrVar.columns = ['Input Feature']
+corrVar["Feature Correlation"] = pd.Series(lr.coef_[0])
+corrVar.sort_values(by='Feature Correlation', ascending=False)
+#input features will be printed in order of correlation relevance. Sex had the highest correlation
+print(corrVar)
 
 
-#Get class of ticket from the ticket number
-#function to extracts ticket prefix, returns 'PNA' if no prefix found or ticket is made of only numbers
-def cleanTicket( ticket ):
-    ticket = ticket.replace( '.' , '' )
-    ticket = ticket.replace( '/' , '' )
-    ticket = ticket.split()
-    ticket = map( lambda t : t.strip() , ticket )
-    ticket = list(filter( lambda t : not t.isdigit() , ticket ))
-    if len( ticket ) > 0:
-        return ticket[0]
-    else: 
-        return 'PNA'
-ticket = pd.DataFrame()
+# Evaluating Support Vector Machines
+svm = SVC()
+svm.fit(trainX , trainY)
+survivePredictsvm = svm.predict(testX)
+svmAccuracy = round(svm.score(trainX , trainY) * 100, 2)
+print('Support Vector Machine Accuracy is   ', svmAccuracy)
+print('Support Vector Machine Survival Prediction on test dataset')
+print(survivePredictsvm)
+# You may observe that the SVM is predicting with a much higher accuracy than the Logistic Regression
 
-# Get dummy variables from tickets:
-ticket[ 'Ticket' ] = bothDatasets[ 'Ticket' ].map( cleanTicket )
-ticket = pd.get_dummies( ticket[ 'Ticket' ] , prefix = 'Ticket' )
-ticket.shape
-ticket.head()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
