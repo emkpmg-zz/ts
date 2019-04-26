@@ -70,3 +70,5 @@ Continous (Could contain decimal values): Age, Fare
 Discrete: SibSp, Parch
 
 
+Ack:
+Data sourced from Kaggle - https://www.kaggle.com/c/titanic/data
