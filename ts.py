@@ -54,8 +54,6 @@ ageSurvive.add_legend()
 # survival for of males and females according to age. Significant difference
 # Difference in curves is a sign that age is a relevant variable for predicting survival(target)
 
-
-
 # 02 DATA TRANSFORMATION AND MISSING VALUES
 
 #Categorical variables (Embarked, Pclass and Sex)
@@ -95,6 +93,61 @@ imputed[ 'Fare' ] = bothDatasets.Fare.fillna( bothDatasets.Fare.mean() )
 imputed.sample(20)
 bothDatasets.sample(20)
 
+# 02 VARIABLE SYNTHESIS
+#Titles of passengers' names can help give us ideas about their social status.
+
+#Extracting titles from names we create a dataframe for titles 
+title = pd.DataFrame()
+# we extract the title from each name
+title[ 'Title' ] = bothDatasets[ 'Name' ].map( lambda name: name.split( ',' )[1].split( '.' )[0].strip() )
+
+# dictionary with all possible titles
+Title_Dictionary = {
+                    "Capt":       "Officer", "Col":        "Officer", "Major":      "Officer",
+                    "Jonkheer":   "Royal Family", "Don":        "Royal Family", "Sir" :       "Royal Family",
+                    "Dr":         "Officer", "Rev":        "Officer", "the Countess":"Royal Family",
+                    "Dona":       "Royal Family", "Mme":        "Mrs", "Mlle":       "Miss",
+                    "Ms":         "Mrs", "Mr" :            "Mr", "Mrs" :       "Mrs",
+                    "Miss" :      "Miss", "Master" :    "Master", "Lady" :      "Royal Family"
+                    }
+
+# mapping each title
+title[ 'Title' ] = title.Title.map( Title_Dictionary )
+title = pd.get_dummies( title.Title )
+#title = pd.concat( [ title , titles_dummies ] , axis = 1 )
+#view title data
+title.head()
+
+#Cabin category can be obtained from cabin number
+#create a cabin category dataframe
+cabin = pd.DataFrame()
+# Missing values for cabin number to be replaced with 'NA' - Not Available/ Non Applicable
+cabin[ 'Cabin' ] = bothDatasets.Cabin.fillna( 'NA' )
+# map cabin values to corresponding cabin letter
+cabin[ 'Cabin' ] = cabin[ 'Cabin' ].map( lambda c : c[0] )
+# dummy encoding
+cabin = pd.get_dummies( cabin['Cabin'] , prefix = 'Cabin' )
+#view cabin data
+cabin.head()
 
 
+#Get class of ticket from the ticket number
+#function to extracts ticket prefix, returns 'PNA' if no prefix found or ticket is made of only numbers
+def cleanTicket( ticket ):
+    ticket = ticket.replace( '.' , '' )
+    ticket = ticket.replace( '/' , '' )
+    ticket = ticket.split()
+    ticket = map( lambda t : t.strip() , ticket )
+    ticket = list(filter( lambda t : not t.isdigit() , ticket ))
+    if len( ticket ) > 0:
+        return ticket[0]
+    else: 
+        return 'PNA'
+ticket = pd.DataFrame()
+
+# Get dummy variables from tickets:
+ticket[ 'Ticket' ] = bothDatasets[ 'Ticket' ].map( cleanTicket )
+ticket = pd.get_dummies( ticket[ 'Ticket' ] , prefix = 'Ticket' )
+ticket.shape
+ticket.head()
 
