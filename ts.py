@@ -19,6 +19,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC, LinearSVC
 from sklearn.ensemble import RandomForestClassifier , GradientBoostingClassifier
+from sklearn.linear_model import Perceptron
+from sklearn.linear_model import SGDClassifier
 
 # Modelling Helpers
 from sklearn.preprocessing import Imputer , Normalizer , scale
@@ -153,10 +155,15 @@ ageNfare[ 'Fare' ] = bothDatasets.Fare.fillna( bothDatasets.Fare.mean() )
 
 #compare original data sample to imputed sample to observe populated missing values
 ageNfare.sample(20)
-bothDatasets.sample(20)
+bothDatasets.describe()
 
 # 02 VARIABLE SYNTHESIS
 #Titles of passengers' names can help give us ideas about their social status.
+
+#Create passenger ID as part of the chosen vars: for indexing or identification 
+pid = bothDatasets['PassengerId']
+print(pid)
+
 
 #Extracting titles from names we create a dataframe for titles , pTitle
 pTitle = pd.DataFrame()
@@ -194,8 +201,8 @@ cabinCat.head()
 
 # 03 VARIABLE SELECTION AND DATA SPLITING
 #combine Chosen Variables: cabinCat, ageNfare, embarked, famCat, Sex, ticket, pclass
-chosenVars = pd.concat([ageNfare, embarked, cabinCat, sex], axis = 1)
-#print(chosenVars.head())
+chosenVars = pd.concat([ageNfare, embarked, cabinCat, sex, pid], axis = 1)
+print(chosenVars.describe())
 
 #Data split: Training, Validation and Test sets creation post cleaning
 # Create all datasets that are necessary to train, validate and test models
@@ -217,6 +224,7 @@ varRelevance = pd.DataFrame( tree.feature_importances_  , columns = [ 'Relevance
 varRelevance = varRelevance.sort_values( [ 'Relevance' ] , ascending = True )
 varRelevance[ : 10 ].plot( kind = 'barh' )
 print (tree.score( trainX , trainY ))
+
 
 # 04 SELECTION OF A CLASSIFICATION MODEL
 #Some ML models are Support Vector Machines, Gradient Boosting Classifier, Random Forests Model, K-nearest neighbors, Gaussian Naive Bayes and Logistic Regression.
@@ -258,15 +266,15 @@ lr = LogisticRegression()
 lr.fit(trainX , trainY)
 survivePredictlr = lr.predict(testX)
 lrAccuracy = round(lr.score(trainX, trainY) * 100, 2)
-print('Logistic Regression Accuracy is   ', lrAccuracy)
-print('Logistic Regression Survival Prediction on test dataset')
-print(survivePredictlr)
+print('\n\nLogistic Regression Accuracy is   ', lrAccuracy)
+print('\n\nLogistic Regression Survival Prediction on test dataset')
+print(survivePredictlr, '\n\n')
 
 #WE CAN FIND HIGHLY CORRELATED FEATURES
 corrVar = pd.DataFrame(trainX.columns.delete(0))
 corrVar.columns = ['Input Feature']
-corrVar["Feature Correlation"] = pd.Series(lr.coef_[0])
-corrVar.sort_values(by='Feature Correlation', ascending=False)
+corrVar["Correlation"] = pd.Series(lr.coef_[0])
+corrVar.sort_values(by='Correlation', ascending=False)
 #input features will be printed in order of correlation relevance. Sex had the highest correlation
 print(corrVar)
 
@@ -276,31 +284,102 @@ svm = SVC()
 svm.fit(trainX , trainY)
 survivePredictsvm = svm.predict(testX)
 svmAccuracy = round(svm.score(trainX , trainY) * 100, 2)
-print('Support Vector Machine Accuracy is   ', svmAccuracy)
-print('Support Vector Machine Survival Prediction on test dataset')
+print('\n\nSupport Vector Machine Accuracy is   ', svmAccuracy)
+print('\n\nSupport Vector Machine Survival Prediction on test dataset')
 print(survivePredictsvm)
 # You may observe that the SVM is predicting with a much higher accuracy than the Logistic Regression
 
+# Evaluating k-Nearest Neighbors algorithm (k-NN)
+knn = KNeighborsClassifier(n_neighbors = 3)
+knn.fit(trainX , trainY)
+survivePredictknn = knn.predict(testX)
+knnAccuracy = round(knn.score(trainX , trainY) * 100, 2)
+print('\n\nk-Nearest Neighbors algorithm Accuracy is   ', knnAccuracy)
+print('\n\nk-Nearest Neighbors Survival Prediction on test dataset')
+print(survivePredictknn)
+
+# Evaluating Gaussian Naive Bayes
+gauss = GaussianNB()
+gauss.fit(trainX , trainY)
+survivePredictgauss = gauss.predict(testX)
+gaussAccuracy = round(gauss.score(trainX , trainY) * 100, 2)
+print('\n\nGaussian Naive Bayes Accuracy is   ', gaussAccuracy)
+print('\n\nGaussian Naive Bayes Survival Prediction on test dataset')
+print(survivePredictgauss)
 
 
+# Evaluating Perceptron model
+percep = Perceptron()
+percep.fit(trainX , trainY)
+survivePredictpercep = percep.predict(testX)
+percepAccuracy = round(percep.score(trainX , trainY) * 100, 2)
+print('\n\nPerceptron model Accuracy is   ', percepAccuracy)
+print('\n\nPerceptron model Survival Prediction on test dataset')
+print(survivePredictpercep)
 
 
+# Evaluating Linear SVC model
+lsvc = LinearSVC()
+lsvc.fit(trainX , trainY)
+survivePredictlsvc = lsvc.predict(testX)
+lsvcAccuracy = round(lsvc.score(trainX , trainY) * 100, 2)
+print('\n\nLinear SVC model Accuracy is   ', lsvcAccuracy)
+print('\n\nLinear SVC Survival Prediction on test dataset')
+print(survivePredictlsvc)
 
 
+# Evaluating Stochastic Gradient Descent model
+sgd = SGDClassifier()
+sgd.fit(trainX , trainY)
+survivePredictsgd = sgd.predict(testX)
+sgdAccuracy = round(sgd.score(trainX , trainY) * 100, 2)
+print('\n\nStochastic Gradient Descent Accuracy is   ', sgdAccuracy)
+print('\n\nStochastic Gradient Descent Survival Prediction on test dataset')
+print(survivePredictsgd)
 
 
+# Evaluating Decision Tree
+dt = DecisionTreeClassifier()
+dt.fit(trainX , trainY)
+survivePredictdt = dt.predict(testX)
+dtAccuracy = round(dt.score(trainX , trainY) * 100, 2)
+print('\n\nDecision Tree Accuracy is   ', dtAccuracy)
+print('\n\nDecision Tree Survival Prediction on test dataset')
+print(survivePredictdt)
 
 
+# Evaluating Random Forest
+rf = RandomForestClassifier(n_estimators=100)
+rf.fit(trainX , trainY)
+survivePredictrf = rf.predict(testX)
+rf.score(trainX , trainY)
+rfAccuracy = round(rf.score(trainX , trainY) * 100, 2)
+print('\n\nRandom Forest Accuracy is   ', rfAccuracy)
+print('\n\nRandom Forest Survival Prediction on test dataset')
+print(survivePredictrf)
 
+# HOW DO WE CHOOSE THE BEST MODEL ? -- One with highest accuracy !
+allModels = pd.DataFrame({
+    'Model': ['Support Vector Machines', 'KNN', 'Logistic Regression', 
+              'Random Forest', 'Naive Bayes', 'Perceptron', 
+              'Stochastic Gradient Decent', 'Linear SVC', 
+              'Decision Tree'],
+    'Score': [svmAccuracy, knnAccuracy, lrAccuracy, 
+              rfAccuracy, gaussAccuracy, percepAccuracy, 
+              sgdAccuracy, lsvcAccuracy, dtAccuracy]})
+allModels.sort_values(by='Score', ascending=False)
 
+print(allModels)
 
+#Generate an output for prediction
+#since decision tree and random forest have the highest accuracies,#
+#I choose to use the predictions from Decision Tree: 
+predictionOutput = pd.DataFrame({
+        "PassengerId": testX["PassengerId"],
+        "Survived": survivePredictdt
+    })
 
-
-
-
-
-
-
+print(predictionOutput)
 
 
 
